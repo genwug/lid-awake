@@ -22,7 +22,7 @@ Requires macOS 13 or later, Xcode command line tools, and Python 3 (`/usr/local/
 ./build-app.sh
 ```
 
-This writes `dist/Крышка.app`. Move that app to `/Applications` and open it. The first launch of an app you built or downloaded yourself is Right Click, then Open.
+This writes `dist/Lid Awake.app`. Move that app to `/Applications` and open it. The first launch of an app you built or downloaded yourself is Right Click, then Open.
 
 The timer does not run on the login screen. After you log in, if the deadline has already passed, sleep is turned back on.
 

@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Переключатель сна Mac при закрытой крышке и таймер, который включает его обратно.
+"""Keep a Mac awake with the lid closed, then turn sleep back on.
 
-Работает только на самом macOS. Docker здесь ни при чём: контейнер не может
-вызвать pmset на хосте.
+This runs on macOS itself. A Docker container cannot call pmset on the Mac.
 """
 
 from __future__ import annotations
@@ -63,7 +62,7 @@ def username() -> str:
 
     name = pwd.getpwuid(os.getuid()).pw_name
     if not re.fullmatch(r"[A-Za-z0-9._-]+", name):
-        raise PowerError(f"необычное имя пользователя: {name}")
+        raise PowerError(f"unusual username: {name}")
     return name
 
 
@@ -140,11 +139,11 @@ def sleep_disabled() -> bool:
         check=False,
     )
     if result.returncode != 0:
-        detail = (result.stderr or "ioreg не ответил").strip()
+        detail = (result.stderr or "ioreg did not answer").strip()
         raise PowerError(detail)
     parsed = parse_sleep_disabled(result.stdout)
     if parsed is None:
-        raise PowerError("в IOPMrootDomain нет SleepDisabled")
+        raise PowerError("IOPMrootDomain has no SleepDisabled")
     return parsed
 
 
@@ -198,27 +197,27 @@ def set_sleep_disabled(disabled: bool) -> None:
         err = (result.stderr or result.stdout or "").strip()
         lowered = err.lower()
         if "password" in lowered or "operation not permitted" in lowered:
-            raise AdminRequired(err or "нужен пароль администратора")
-        raise PowerError(err or f"pmset завершился с кодом {result.returncode}")
+            raise AdminRequired(err or "administrator password required")
+        raise PowerError(err or f"pmset exited with code {result.returncode}")
     deadline = time.time() + 3
     while time.time() < deadline:
         if sleep_disabled() == disabled:
             return
         time.sleep(0.1)
-    raise PowerError("pmset выполнился, но SleepDisabled не изменился")
+    raise PowerError("pmset finished, but SleepDisabled did not change")
 
 
 def validate_minutes(value: object) -> int:
     if isinstance(value, bool):
-        raise PowerError("укажи время целым числом минут")
+        raise PowerError("enter the time as a whole number of minutes")
     if isinstance(value, float):
         if not value.is_integer():
-            raise PowerError("укажи время целым числом минут")
+            raise PowerError("enter the time as a whole number of minutes")
         value = int(value)
     if not isinstance(value, int):
-        raise PowerError("укажи время целым числом минут")
+        raise PowerError("enter the time as a whole number of minutes")
     if value < MIN_MINUTES or value > MAX_MINUTES:
-        raise PowerError("таймер может быть от 1 минуты до 24 часов")
+        raise PowerError("the timer can be from 1 minute to 24 hours")
     return value
 
 
@@ -277,24 +276,24 @@ def reconcile() -> None:
         try:
             disabled = sleep_disabled()
         except PowerError as exc:
-            notice("read", f"не читается состояние сна: {exc}")
+            notice("read", f"cannot read the sleep state: {exc}")
             return
         now = time.time()
         try:
             if now >= until:
                 if disabled:
                     set_sleep_disabled(False)
-                    log("таймер вышел, сон снова включён")
+                    log("timer ended, sleep is back on")
                 update_state(until_epoch=None, admin_ok=True)
             elif not disabled:
                 set_sleep_disabled(True)
                 update_state(admin_ok=True)
-                log("сон снова выключен до конца таймера")
+                log("sleep is off again until the timer ends")
         except AdminRequired as exc:
             update_state(admin_ok=False)
-            notice("admin", f"нет права вернуть настройку: {exc}")
+            notice("admin", f"no permission to restore the setting: {exc}")
         except PowerError as exc:
-            notice("power", f"не удалось сменить сон: {exc}")
+            notice("power", f"could not change sleep: {exc}")
 
 
 def watchdog() -> None:
@@ -302,7 +301,7 @@ def watchdog() -> None:
         try:
             reconcile()
         except Exception as exc:
-            log(f"таймер: {exc}")
+            log(f"timer: {exc}")
 
 
 def sudoers_script_text(user: str | None = None) -> str:
@@ -342,10 +341,10 @@ end run
     if result.returncode != 0:
         err = (result.stderr or result.stdout or "").strip()
         if "User canceled" in err or "-128" in err:
-            raise PowerError("пароль не введён")
-        raise PowerError(err or "не удалось записать разрешение")
+            raise PowerError("password was not entered")
+        raise PowerError(err or "could not write the permission")
     if not sudoers_ready():
-        raise PowerError("пароль принят, но sudo не видит разрешение на pmset")
+        raise PowerError("password was accepted, but sudo does not see the pmset permission")
     update_state(admin_ok=True)
 
 
@@ -452,7 +451,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         if not self.host_ok():
-            self.send_json({"ok": False, "error": "чужой адрес"}, 403)
+            self.send_json({"ok": False, "error": "wrong address"}, 403)
             return
         path = urlparse(self.path).path
         if path == "/":
@@ -471,16 +470,16 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", "0")
             self.end_headers()
             return
-        self.send_json({"ok": False, "error": "нет такой страницы"}, 404)
+        self.send_json({"ok": False, "error": "no such page"}, 404)
 
     def do_POST(self) -> None:
         if not self.host_ok():
-            self.send_json({"ok": False, "error": "чужой адрес"}, 403)
+            self.send_json({"ok": False, "error": "wrong address"}, 403)
             return
         if not self.authorized():
             return
         if not self.origin_ok() or not self.json_content():
-            self.send_json({"ok": False, "error": "запрос отклонён"}, 403)
+            self.send_json({"ok": False, "error": "request rejected"}, 403)
             return
         path = urlparse(self.path).path
         try:
@@ -492,7 +491,7 @@ class Handler(BaseHTTPRequestHandler):
             elif path == "/api/install-helper":
                 install_sudoers()
             else:
-                self.send_json({"ok": False, "error": "нет такого действия"}, 404)
+                self.send_json({"ok": False, "error": "no such action"}, 404)
                 return
             self.send_json(status_payload())
         except AdminRequired as exc:
@@ -500,17 +499,17 @@ class Handler(BaseHTTPRequestHandler):
         except PowerError as exc:
             self.send_json({"ok": False, "error": str(exc)}, 400)
         except json.JSONDecodeError:
-            self.send_json({"ok": False, "error": "не разобрал JSON"}, 400)
+            self.send_json({"ok": False, "error": "could not read JSON"}, 400)
 
     def authorized(self) -> bool:
         header = self.headers.get("Authorization", "")
         expected = f"Bearer {load_state()['token']}"
         if len(header) != len(expected) or not secrets.compare_digest(header, expected):
-            self.send_json({"ok": False, "error": "нет доступа"}, 401)
+            self.send_json({"ok": False, "error": "no access"}, 401)
             return False
         host = self.headers.get("Host", "")
         if host not in {f"{HOST}:{PORT}", f"localhost:{PORT}"}:
-            self.send_json({"ok": False, "error": "чужой адрес"}, 403)
+            self.send_json({"ok": False, "error": "wrong address"}, 403)
             return False
         return True
 
@@ -528,15 +527,15 @@ class Handler(BaseHTTPRequestHandler):
         try:
             length = int(length_header)
         except ValueError as exc:
-            raise PowerError("битая длина запроса") from exc
+            raise PowerError("bad request length") from exc
         if length < 0 or length > 8192:
-            raise PowerError("слишком большой запрос")
+            raise PowerError("request is too large")
         raw = self.rfile.read(length) if length else b""
         if not raw:
             return {}
         data = json.loads(raw)
         if not isinstance(data, dict):
-            raise PowerError("ожидался объект")
+            raise PowerError("expected an object")
         return data
 
     def serve_index(self) -> None:
@@ -565,7 +564,7 @@ def stop_server(restore: bool) -> None:
     if restore:
         try:
             if load_state().get("until_epoch"):
-                log("остановка, возвращаю сон")
+                log("stopping, turning sleep back on")
                 allow_sleep()
         except Exception as exc:
             log(str(exc))
@@ -583,8 +582,8 @@ def serve() -> None:
     global httpd
     if sys.platform != "darwin":
         sys.exit(
-            "Крышка работает только на macOS. "
-            "Из Docker сон Mac не переключается: контейнер не видит pmset."
+            "Lid Awake runs only on macOS. "
+            "A Docker container cannot switch Mac sleep: it cannot see pmset."
         )
     reconcile()
     threading.Thread(target=watchdog, name="watchdog", daemon=True).start()
@@ -594,11 +593,11 @@ def serve() -> None:
         httpd = ThreadingHTTPServer((HOST, PORT), Handler)
     except OSError as exc:
         sys.exit(
-            f"порт {PORT} занят ({exc}). "
-            f"Если программа уже запущена, открой http://{HOST}:{PORT}"
+            f"port {PORT} is in use ({exc}). "
+            f"If the app is already running, open http://{HOST}:{PORT}"
         )
     httpd.daemon_threads = True
-    log(f"крышка слушает http://{HOST}:{PORT}")
+    log(f"Lid Awake is listening on http://{HOST}:{PORT}")
     try:
         httpd.serve_forever()
     finally:
@@ -624,8 +623,8 @@ def wait_until_up(timeout: float = 8) -> bool:
 def ensure_agent() -> None:
     if sys.platform != "darwin":
         sys.exit(
-            "Крышка работает только на macOS. "
-            "Из Docker сон Mac не переключается: контейнер не видит pmset."
+            "Lid Awake runs only on macOS. "
+            "A Docker container cannot switch Mac sleep: it cannot see pmset."
         )
     write_plist()
     domain = gui_domain()
@@ -640,17 +639,17 @@ def ensure_agent() -> None:
             text=True,
         )
         if result.returncode != 0 and not service_loaded():
-            detail = (result.stderr or result.stdout or "launchctl bootstrap не удался").strip()
+            detail = (result.stderr or result.stdout or "launchctl bootstrap failed").strip()
             sys.exit(detail)
     if not wait_until_up():
-        sys.exit(f"сервер не открыл порт {PORT}. Журнал: {LOG_PATH}")
+        sys.exit(f"the server did not open port {PORT}. Log: {LOG_PATH}")
 
 
 def ensure_service_and_open() -> None:
     if sys.platform != "darwin":
         sys.exit(
-            "Крышка работает только на macOS. "
-            "Из Docker сон Mac не переключается: контейнер не видит pmset."
+            "Lid Awake runs only on macOS. "
+            "A Docker container cannot switch Mac sleep: it cannot see pmset."
         )
     ensure_agent()
     subprocess.run(["open", f"http://{HOST}:{PORT}"], check=False)
@@ -675,7 +674,7 @@ def run_self_test() -> None:
             validate_minutes(bad)
         except PowerError:
             continue
-        raise SystemExit(f"должно было отвергнуть {bad!r}")
+        raise SystemExit(f"should have rejected {bad!r}")
 
     state = load_state()
     assert state["minutes"] == 60
@@ -701,9 +700,9 @@ def run_self_test() -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Сон Mac при закрытой крышке")
-    parser.add_argument("--serve", action="store_true", help="только сервер, без автозапуска")
-    parser.add_argument("--ensure-agent", action="store_true", help="держать таймер в фоне")
+    parser = argparse.ArgumentParser(description="Mac sleep with the lid closed")
+    parser.add_argument("--serve", action="store_true", help="server only, do not open a window")
+    parser.add_argument("--ensure-agent", action="store_true", help="keep the timer running in the background")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     if args.self_test:

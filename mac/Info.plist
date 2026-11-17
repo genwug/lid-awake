@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleName</key>
-  <string>Крышка</string>
+  <string>Lid Awake</string>
   <key>CFBundleDisplayName</key>
-  <string>Крышка</string>
+  <string>Lid Awake</string>
   <key>CFBundleIdentifier</key>
   <string>com.gidon.lid-awake</string>
   <key>CFBundleVersion</key>

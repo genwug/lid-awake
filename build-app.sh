@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-APP="dist/Крышка.app"
+APP="dist/Lid Awake.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 
@@ -29,4 +29,4 @@ cp mac/Info.plist "$APP/Contents/Info.plist"
 cp server.py index.html "$APP/Contents/Resources/"
 chmod +x "$APP/Contents/MacOS/lid-awake"
 codesign --force --sign - "$APP"
-echo "собрано: $APP"
+echo "built: $APP"

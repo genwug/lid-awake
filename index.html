@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Крышка</title>
+  <title>Lid Awake</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23221c16' rx='6' width='32' height='32'/%3E%3Cpath d='M7 20h18v2H7zM8 11h16v8H8z' fill='%23f4efe6'/%3E%3C/svg%3E">
   <style>
     :root {
@@ -215,51 +215,51 @@
 <body>
   <main>
     <p class="eyebrow">Mac</p>
-    <h1>Крышка</h1>
-    <p class="lead">Закрыл ноутбук — он либо засыпает, либо ещё работает заданное время. Потом сон включается сам.</p>
+    <h1>Lid Awake</h1>
+    <p class="lead">Close the laptop and it either sleeps, or keeps working for a set time. Then sleep turns itself back on.</p>
 
     <section id="status" class="status asleep" aria-live="polite">
-      <p class="state-name" id="state-name">Смотрю настройки…</p>
+      <p class="state-name" id="state-name">Checking settings…</p>
       <p class="detail" id="detail"></p>
     </section>
 
     <div class="row">
       <p class="switch-copy">
-        <strong id="switch-title">Не засыпать</strong>
-        <span id="switch-hint">выключено — крышка усыпляет</span>
+        <strong id="switch-title">Stay awake</strong>
+        <span id="switch-hint">off — the lid sleeps the Mac</span>
       </p>
-      <button id="toggle" class="switch" type="button" aria-pressed="false" aria-label="Не засыпать при закрытой крышке" disabled>
+      <button id="toggle" class="switch" type="button" aria-pressed="false" aria-label="Stay awake with the lid closed" disabled>
         <span class="knob"></span>
       </button>
     </div>
 
-    <label class="block" for="hours">Если выключить сон, вернуть его через</label>
+    <label class="block" for="hours">If you turn sleep off, turn it back on after</label>
     <div class="presets" id="presets">
-      <button type="button" data-minutes="15">15 мин</button>
-      <button type="button" data-minutes="30">30 мин</button>
-      <button type="button" data-minutes="60">1 час</button>
-      <button type="button" data-minutes="120">2 часа</button>
-      <button type="button" data-minutes="240">4 часа</button>
+      <button type="button" data-minutes="15">15 min</button>
+      <button type="button" data-minutes="30">30 min</button>
+      <button type="button" data-minutes="60">1 hour</button>
+      <button type="button" data-minutes="120">2 hours</button>
+      <button type="button" data-minutes="240">4 hours</button>
     </div>
     <div class="custom">
-      <input id="hours" type="number" min="0" max="24" step="1" inputmode="numeric" aria-label="Часы">
-      <label for="hours">ч</label>
-      <input id="minutes" type="number" min="0" max="59" step="1" inputmode="numeric" aria-label="Минуты">
-      <label for="minutes">мин</label>
+      <input id="hours" type="number" min="0" max="24" step="1" inputmode="numeric" aria-label="Hours">
+      <label for="hours">h</label>
+      <input id="minutes" type="number" min="0" max="59" step="1" inputmode="numeric" aria-label="Minutes">
+      <label for="minutes">min</label>
     </div>
     <div class="actions">
-      <button id="again" class="ghost" type="button" hidden>Поставить это время заново</button>
+      <button id="again" class="ghost" type="button" hidden>Set this time again</button>
     </div>
 
     <section id="admin" class="banner" hidden>
-      <p>Таймер должен включить сон сам, уже без тебя. macOS один раз спросит пароль. Разрешение узкое: только <code>pmset disablesleep</code>, включить или выключить эту настройку.</p>
+      <p>The timer has to turn sleep back on by itself. macOS asks for your password once. The permission is only <code>pmset disablesleep</code>, on or off.</p>
       <div class="actions">
-        <button id="grant" class="primary" type="button">Ввести пароль</button>
+        <button id="grant" class="primary" type="button">Enter password</button>
       </div>
     </section>
     <p id="action-error" class="error" hidden></p>
 
-    <p id="screen-note" class="note">Когда переключатель включён, компьютер не засыпает и окна агентов продолжают работать. Экран при этом гаснет сам.</p>
+    <p id="screen-note" class="note">While this is on, the computer stays awake and agent windows keep running. The screen still turns off on its own.</p>
     <p id="autostart" class="note"></p>
   </main>
   <script id="boot" type="application/json">{{BOOT}}</script>
@@ -291,11 +291,11 @@
       const hours = Number(hoursInput.value || 0);
       const minutes = Number(minutesInput.value || 0);
       if (!Number.isInteger(hours) || !Number.isInteger(minutes) || hours < 0 || minutes < 0 || minutes > 59) {
-        throw new Error("нужны целые часы и минуты");
+        throw new Error("hours and minutes need to be whole numbers");
       }
       const total = hours * 60 + minutes;
       if (total < 1 || total > 24 * 60) {
-        throw new Error("таймер может быть от 1 минуты до 24 часов");
+        throw new Error("the timer can be from 1 minute to 24 hours");
       }
       return total;
     }
@@ -315,18 +315,18 @@
       const hours = Math.floor(whole / 3600);
       const minutes = Math.floor((whole % 3600) / 60);
       const secs = whole % 60;
-      if (hours > 0) return `${hours} ч ${String(minutes).padStart(2, "0")} мин`;
-      if (minutes > 0) return secs ? `${minutes} мин ${secs} с` : `${minutes} мин`;
-      return `${secs} с`;
+      if (hours > 0) return `${hours} h ${String(minutes).padStart(2, "0")} min`;
+      if (minutes > 0) return secs ? `${minutes} min ${secs} s` : `${minutes} min`;
+      return `${secs} s`;
     }
 
     function formatClock(epoch) {
       const date = new Date(epoch * 1000);
       const sameDay = date.toDateString() === new Date().toDateString();
       if (sameDay) {
-        return date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+        return date.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" });
       }
-      return date.toLocaleString("ru-RU", {
+      return date.toLocaleString("en", {
         day: "numeric",
         month: "short",
         hour: "2-digit",
@@ -340,28 +340,21 @@
       return Math.max(0, latest.remaining_seconds - passed);
     }
 
-    function minutesWord(count) {
-      const mod10 = count % 10;
-      const mod100 = count % 100;
-      if (mod10 === 1 && mod100 !== 11) return "минуту";
-      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "минуты";
-      return "минут";
-    }
-
     function screenSentence(minutes) {
-      const head = "Когда переключатель включён, компьютер не засыпает и окна агентов продолжают работать.";
-      if (minutes === 0) return `${head} Экран в настройках Mac не гаснет совсем.`;
+      const head = "While this is on, the computer stays awake and agent windows keep running.";
+      if (minutes === 0) return `${head} Display sleep is set to never in Mac settings.`;
       if (Number.isInteger(minutes) && minutes > 0) {
-        return `${head} Экран гаснет сам через ${minutes} ${minutesWord(minutes)}.`;
+        const unit = minutes === 1 ? "minute" : "minutes";
+        return `${head} The screen turns off on its own after ${minutes} ${unit}.`;
       }
-      return `${head} Экран гаснет сам.`;
+      return `${head} The screen still turns off on its own.`;
     }
 
     function paintClock() {
       if (!latest || latest.sleep_disabled !== true || latest.until_epoch == null) return;
       const left = remainingNow();
       if (left == null) return;
-      detail.textContent = `Сон вернётся в ${formatClock(latest.until_epoch)}, через ${formatRemaining(left)}. Экран при этом гаснет.`;
+      detail.textContent = `Sleep returns at ${formatClock(latest.until_epoch)}, in ${formatRemaining(left)}. The screen can still turn off.`;
     }
 
     function render(data) {
@@ -378,29 +371,29 @@
       toggle.disabled = unknown || busy || !hydrated;
       if (data.admin_ok === true) admin.hidden = true;
       if (unknown) {
-        stateName.textContent = "Не вижу состояние сна";
-        detail.textContent = data.error || "ioreg не ответил";
-        switchHint.textContent = "недоступно";
+        stateName.textContent = "Can't read sleep state";
+        detail.textContent = data.error || "ioreg did not answer";
+        switchHint.textContent = "unavailable";
       } else if (awake && data.until_epoch) {
-        stateName.textContent = "Не засыпает";
-        switchHint.textContent = "включено — до конца таймера";
+        stateName.textContent = "Awake";
+        switchHint.textContent = "on — until the timer ends";
         paintClock();
       } else if (awake) {
-        stateName.textContent = "Не засыпает";
-        detail.textContent = "Сон выключен без таймера. Сам он не включится.";
-        switchHint.textContent = "включено — без таймера";
+        stateName.textContent = "Awake";
+        detail.textContent = "Sleep is off with no timer. It will not turn itself back on.";
+        switchHint.textContent = "on — no timer";
       } else {
-        stateName.textContent = "Засыпает";
-        detail.textContent = "Закрытая крышка усыпляет Mac, как обычно.";
-        switchHint.textContent = "выключено — крышка усыпляет";
+        stateName.textContent = "Sleeps";
+        detail.textContent = "Closing the lid puts the Mac to sleep, as usual.";
+        switchHint.textContent = "off — the lid sleeps the Mac";
       }
       const showAgain = awake && !unknown;
       again.hidden = !showAgain;
-      again.textContent = data.until_epoch ? "Поставить это время заново" : "Поставить таймер";
+      again.textContent = data.until_epoch ? "Set this time again" : "Set a timer";
       screenNote.textContent = screenSentence(data.display_sleep_minutes);
       autostart.textContent = data.in_app || data.autostart
-        ? "Окно можно закрыть. Сон включится сам, когда выйдет время."
-        : "Сейчас таймер живёт только в этом процессе. Команда python3 server.py оставит его после закрытия терминала и после входа в систему.";
+        ? "You can close this window. Sleep turns back on when the time is up."
+        : "The timer lives only in this process. Run python3 server.py to keep it after the terminal closes and after login.";
     }
 
     async function api(path, body) {
@@ -414,11 +407,11 @@
       try {
         response = await fetch(path, options);
       } catch {
-        throw new Error("нет связи с программой");
+        throw new Error("no connection to the app");
       }
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        const error = new Error(data.error || "не вышло");
+        const error = new Error(data.error || "that failed");
         error.needAdmin = Boolean(data.need_admin);
         throw error;
       }
@@ -446,7 +439,7 @@
       try {
         render(await api("/api/status"));
       } catch (error) {
-        stateName.textContent = "Нет связи";
+        stateName.textContent = "No connection";
         detail.textContent = error.message;
       }
     }
@@ -481,10 +474,10 @@
     again.addEventListener("click", () => run("stay"));
     grant.addEventListener("click", async () => {
       grant.disabled = true;
-      grant.textContent = "Жду пароль в окне macOS…";
+      grant.textContent = "Waiting for the macOS password dialog…";
       await run("grant");
       grant.disabled = false;
-      grant.textContent = "Ввести пароль";
+      grant.textContent = "Enter password";
       if (pending && latest && latest.admin_ok) {
         const next = pending;
         pending = null;

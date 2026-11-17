@@ -11,10 +11,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         case .ready:
             break
         case .missingPython:
-            fail("Не найден python3. Он нужен, чтобы переключать сон.")
+            fail("python3 was not found. It is needed to switch sleep.")
             return
         case .missingServer:
-            fail("В программе нет server.py.")
+            fail("This app does not contain server.py.")
             return
         case .failed(let message):
             fail(message)
@@ -34,7 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let appMenu = NSMenu()
         appItem.submenu = appMenu
         appMenu.addItem(
-            NSMenuItem(title: "Выйти из «Крышки»", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+            NSMenuItem(title: "Quit Lid Awake", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         )
         NSApp.mainMenu = main
     }
@@ -68,9 +68,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if process.terminationStatus != 0 {
             let data = pipe.fileHandleForReading.readDataToEndOfFile()
             let message = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-            return .failed(message?.isEmpty == false ? message! : "Фоновый таймер не запустился")
+            return .failed(message?.isEmpty == false ? message! : "The background timer did not start")
         }
-        return waitUntilUp(timeout: 3) ? .ready : .failed("Страница не открылась. Журнал: ~/Library/Logs/lid-awake.log")
+        return waitUntilUp(timeout: 3) ? .ready : .failed("The page did not open. Log: ~/Library/Logs/lid-awake.log")
     }
 
     private func pythonURL() -> URL? {
@@ -116,7 +116,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             backing: .buffered,
             defer: false
         )
-        window.title = "Крышка"
+        window.title = "Lid Awake"
         window.minSize = NSSize(width: 420, height: 640)
         window.backgroundColor = NSColor(srgbRed: 0.894, green: 0.867, blue: 0.816, alpha: 1)
         window.center()
@@ -133,7 +133,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func fail(_ message: String) {
         let alert = NSAlert()
-        alert.messageText = "Крышка не запустилась"
+        alert.messageText = "Lid Awake did not start"
         alert.informativeText = message
         alert.runModal()
         NSApp.terminate(nil)
