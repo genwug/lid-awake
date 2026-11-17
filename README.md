@@ -4,6 +4,14 @@ Keep a MacBook awake with the lid closed, for a time you choose. When the timer 
 
 The screen is allowed to turn off. Downloads, SSH sessions, and local agents keep running while the display sleeps or the lid is shut.
 
+## How it differs
+
+A MacBook sleeps when the lid closes, unless it is plugged into power with an external display and a keyboard or mouse. `caffeinate` does not change that.
+
+`pmset -a disablesleep 1` does keep the Mac awake with the lid closed and nothing else attached. That switch stays on until someone turns it off, including after a restart. Lid Awake turns it on for a time you choose, from 1 minute to 24 hours, then turns sleep back on by itself.
+
+The display keeps its own timer, so the screen can go dark while the computer stays awake. Closing the window leaves the timer running.
+
 ## What it does
 
 - Toggle between normal lid sleep and staying awake.
