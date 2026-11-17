@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Крышка</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23221c16' rx='6' width='32' height='32'/%3E%3Cpath d='M7 20h18v2H7zM8 11h16v8H8z' fill='%23f4efe6'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #e4ddd0;
+      --card: #f7f3ea;
+      --ink: #221c16;
+      --muted: #6f675c;
+      --line: #ddd3c4;
+      --field: #fffdf8;
+      --safe: #1d6b43;
+      --safe-soft: #e5f2ea;
+      --awake: #9d3d16;
+      --awake-soft: #f8e6da;
+      --shadow: 0 18px 50px rgba(60, 42, 20, 0.08);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --bg: #16140f;
+        --card: #242017;
+        --ink: #f4efe6;
+        --muted: #b5aa9a;
+        --line: #3c352b;
+        --field: #1c1914;
+        --safe: #8dcfab;
+        --safe-soft: #1a2c22;
+        --awake: #f0a07a;
+        --awake-soft: #3a2418;
+        --shadow: none;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      align-items: center;
+      padding: 24px 16px;
+      background: var(--bg);
+      color: var(--ink);
+      font: 17px/1.45 "Avenir Next", "Segoe UI", sans-serif;
+    }
+    main {
+      width: min(28rem, 100%);
+      margin: 0 auto;
+      padding: 28px 26px 22px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    .eyebrow {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 6px 0 0;
+      font: 600 40px/1.05 "Iowan Old Style", Palatino, Georgia, serif;
+      letter-spacing: -0.03em;
+    }
+    .lead {
+      margin: 10px 0 0;
+      color: var(--muted);
+    }
+    .status {
+      margin-top: 22px;
+      padding: 16px 16px 14px;
+      border-radius: 16px;
+      background: var(--safe-soft);
+    }
+    .status.awake { background: var(--awake-soft); }
+    .status p { margin: 0; }
+    .state-name {
+      font: 600 28px/1.1 "Iowan Old Style", Palatino, Georgia, serif;
+    }
+    .status.asleep .state-name { color: var(--safe); }
+    .status.awake .state-name { color: var(--awake); }
+    .detail {
+      margin-top: 6px;
+      color: var(--muted);
+    }
+    .remain {
+      font-variant-numeric: tabular-nums;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .switch {
+      position: relative;
+      width: 92px;
+      height: 54px;
+      flex: 0 0 auto;
+      padding: 0;
+      border: 0;
+      border-radius: 999px;
+      background: #8aa894;
+      cursor: pointer;
+    }
+    .switch[aria-pressed="true"] { background: var(--awake); }
+    .switch:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 3px;
+    }
+    .switch:disabled { cursor: wait; opacity: 0.6; }
+    .knob {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #fffdf8;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+      transition: transform 160ms ease;
+    }
+    .switch[aria-pressed="true"] .knob { transform: translateX(38px); }
+    .switch-copy { margin: 0; }
+    .switch-copy strong { display: block; }
+    .switch-copy span { color: var(--muted); font-size: 14px; }
+    label.block {
+      display: block;
+      margin: 22px 0 8px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .presets, .custom {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .presets button, .ghost, .primary {
+      border-radius: 999px;
+      font: inherit;
+      cursor: pointer;
+    }
+    .presets button {
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      background: var(--field);
+      color: var(--ink);
+    }
+    .presets button[aria-pressed="true"] {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: var(--card);
+    }
+    .presets button:focus-visible, .ghost:focus-visible, .primary:focus-visible, input:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+    }
+    .custom {
+      align-items: center;
+      margin-top: 10px;
+    }
+    .custom label { color: var(--muted); font-size: 14px; }
+    input[type="number"] {
+      width: 4.6rem;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--field);
+      color: var(--ink);
+      font: inherit;
+      font-variant-numeric: tabular-nums;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .ghost, .primary {
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink);
+    }
+    .primary {
+      border-color: transparent;
+      background: var(--ink);
+      color: var(--card);
+    }
+    .banner, .error {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 14px;
+    }
+    .banner { background: var(--awake-soft); }
+    .banner p, .error p { margin: 0; }
+    .banner .actions { margin-top: 10px; }
+    .error { background: var(--awake-soft); color: var(--awake); }
+    .note {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Mac</p>
+    <h1>Крышка</h1>
+    <p class="lead">Закрыл ноутбук — он либо засыпает, либо ещё работает заданное время. Потом сон включается сам.</p>
+
+    <section id="status" class="status asleep" aria-live="polite">
+      <p class="state-name" id="state-name">Смотрю настройки…</p>
+      <p class="detail" id="detail"></p>
+    </section>
+
+    <div class="row">
+      <p class="switch-copy">
+        <strong id="switch-title">Не засыпать</strong>
+        <span id="switch-hint">выключено — крышка усыпляет</span>
+      </p>
+      <button id="toggle" class="switch" type="button" aria-pressed="false" aria-label="Не засыпать при закрытой крышке" disabled>
+        <span class="knob"></span>
+      </button>
+    </div>
+
+    <label class="block" for="hours">Если выключить сон, вернуть его через</label>
+    <div class="presets" id="presets">
+      <button type="button" data-minutes="15">15 мин</button>
+      <button type="button" data-minutes="30">30 мин</button>
+      <button type="button" data-minutes="60">1 час</button>
+      <button type="button" data-minutes="120">2 часа</button>
+      <button type="button" data-minutes="240">4 часа</button>
+    </div>
+    <div class="custom">
+      <input id="hours" type="number" min="0" max="24" step="1" inputmode="numeric" aria-label="Часы">
+      <label for="hours">ч</label>
+      <input id="minutes" type="number" min="0" max="59" step="1" inputmode="numeric" aria-label="Минуты">
+      <label for="minutes">мин</label>
+    </div>
+    <div class="actions">
+      <button id="again" class="ghost" type="button" hidden>Поставить это время заново</button>
+    </div>
+
+    <section id="admin" class="banner" hidden>
+      <p>Таймер должен включить сон сам, уже без тебя. macOS один раз спросит пароль. Разрешение узкое: только <code>pmset disablesleep</code>, включить или выключить эту настройку.</p>
+      <div class="actions">
+        <button id="grant" class="primary" type="button">Ввести пароль</button>
+      </div>
+    </section>
+    <p id="action-error" class="error" hidden></p>
+
+    <p id="screen-note" class="note">Когда переключатель включён, компьютер не засыпает и окна агентов продолжают работать. Экран при этом гаснет сам.</p>
+    <p id="autostart" class="note"></p>
+  </main>
+  <script id="boot" type="application/json">{{BOOT}}</script>
+  <script>
+    const boot = JSON.parse(document.getElementById("boot").textContent);
+    const TOKEN = boot.token;
+    const statusEl = document.getElementById("status");
+    const stateName = document.getElementById("state-name");
+    const detail = document.getElementById("detail");
+    const toggle = document.getElementById("toggle");
+    const switchHint = document.getElementById("switch-hint");
+    const hoursInput = document.getElementById("hours");
+    const minutesInput = document.getElementById("minutes");
+    const again = document.getElementById("again");
+    const admin = document.getElementById("admin");
+    const grant = document.getElementById("grant");
+    const actionError = document.getElementById("action-error");
+    const autostart = document.getElementById("autostart");
+    const screenNote = document.getElementById("screen-note");
+    const presetButtons = [...document.querySelectorAll("#presets button")];
+
+    let latest = null;
+    let snapshotAt = 0;
+    let busy = false;
+    let hydrated = false;
+    let pending = null;
+
+    function selectedMinutes() {
+      const hours = Number(hoursInput.value || 0);
+      const minutes = Number(minutesInput.value || 0);
+      if (!Number.isInteger(hours) || !Number.isInteger(minutes) || hours < 0 || minutes < 0 || minutes > 59) {
+        throw new Error("нужны целые часы и минуты");
+      }
+      const total = hours * 60 + minutes;
+      if (total < 1 || total > 24 * 60) {
+        throw new Error("таймер может быть от 1 минуты до 24 часов");
+      }
+      return total;
+    }
+
+    function setMinutes(total) {
+      const hours = Math.floor(total / 60);
+      const minutes = total % 60;
+      hoursInput.value = String(hours);
+      minutesInput.value = String(minutes);
+      for (const button of presetButtons) {
+        button.setAttribute("aria-pressed", Number(button.dataset.minutes) === total ? "true" : "false");
+      }
+    }
+
+    function formatRemaining(seconds) {
+      const whole = Math.max(0, Math.ceil(seconds));
+      const hours = Math.floor(whole / 3600);
+      const minutes = Math.floor((whole % 3600) / 60);
+      const secs = whole % 60;
+      if (hours > 0) return `${hours} ч ${String(minutes).padStart(2, "0")} мин`;
+      if (minutes > 0) return secs ? `${minutes} мин ${secs} с` : `${minutes} мин`;
+      return `${secs} с`;
+    }
+
+    function formatClock(epoch) {
+      const date = new Date(epoch * 1000);
+      const sameDay = date.toDateString() === new Date().toDateString();
+      if (sameDay) {
+        return date.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+      }
+      return date.toLocaleString("ru-RU", {
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+
+    function remainingNow() {
+      if (!latest || latest.remaining_seconds == null || latest.until_epoch == null) return null;
+      const passed = (Date.now() - snapshotAt) / 1000;
+      return Math.max(0, latest.remaining_seconds - passed);
+    }
+
+    function minutesWord(count) {
+      const mod10 = count % 10;
+      const mod100 = count % 100;
+      if (mod10 === 1 && mod100 !== 11) return "минуту";
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "минуты";
+      return "минут";
+    }
+
+    function screenSentence(minutes) {
+      const head = "Когда переключатель включён, компьютер не засыпает и окна агентов продолжают работать.";
+      if (minutes === 0) return `${head} Экран в настройках Mac не гаснет совсем.`;
+      if (Number.isInteger(minutes) && minutes > 0) {
+        return `${head} Экран гаснет сам через ${minutes} ${minutesWord(minutes)}.`;
+      }
+      return `${head} Экран гаснет сам.`;
+    }
+
+    function paintClock() {
+      if (!latest || latest.sleep_disabled !== true || latest.until_epoch == null) return;
+      const left = remainingNow();
+      if (left == null) return;
+      detail.textContent = `Сон вернётся в ${formatClock(latest.until_epoch)}, через ${formatRemaining(left)}. Экран при этом гаснет.`;
+    }
+
+    function render(data) {
+      latest = data;
+      snapshotAt = Date.now();
+      if (!hydrated && Number.isInteger(data.minutes)) {
+        setMinutes(data.minutes);
+        hydrated = true;
+      }
+      const unknown = data.sleep_disabled == null;
+      const awake = data.sleep_disabled === true;
+      statusEl.className = `status ${awake ? "awake" : "asleep"}`;
+      toggle.setAttribute("aria-pressed", awake ? "true" : "false");
+      toggle.disabled = unknown || busy || !hydrated;
+      if (data.admin_ok === true) admin.hidden = true;
+      if (unknown) {
+        stateName.textContent = "Не вижу состояние сна";
+        detail.textContent = data.error || "ioreg не ответил";
+        switchHint.textContent = "недоступно";
+      } else if (awake && data.until_epoch) {
+        stateName.textContent = "Не засыпает";
+        switchHint.textContent = "включено — до конца таймера";
+        paintClock();
+      } else if (awake) {
+        stateName.textContent = "Не засыпает";
+        detail.textContent = "Сон выключен без таймера. Сам он не включится.";
+        switchHint.textContent = "включено — без таймера";
+      } else {
+        stateName.textContent = "Засыпает";
+        detail.textContent = "Закрытая крышка усыпляет Mac, как обычно.";
+        switchHint.textContent = "выключено — крышка усыпляет";
+      }
+      const showAgain = awake && !unknown;
+      again.hidden = !showAgain;
+      again.textContent = data.until_epoch ? "Поставить это время заново" : "Поставить таймер";
+      screenNote.textContent = screenSentence(data.display_sleep_minutes);
+      autostart.textContent = data.in_app || data.autostart
+        ? "Окно можно закрыть. Сон включится сам, когда выйдет время."
+        : "Сейчас таймер живёт только в этом процессе. Команда python3 server.py оставит его после закрытия терминала и после входа в систему.";
+    }
+
+    async function api(path, body) {
+      const options = { headers: { Authorization: `Bearer ${TOKEN}` } };
+      if (body !== undefined) {
+        options.method = "POST";
+        options.headers["Content-Type"] = "application/json";
+        options.body = JSON.stringify(body);
+      }
+      let response;
+      try {
+        response = await fetch(path, options);
+      } catch {
+        throw new Error("нет связи с программой");
+      }
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const error = new Error(data.error || "не вышло");
+        error.needAdmin = Boolean(data.need_admin);
+        throw error;
+      }
+      return data;
+    }
+
+    function showActionError(error) {
+      if (!error) {
+        actionError.hidden = true;
+        actionError.textContent = "";
+        return;
+      }
+      if (error.needAdmin) {
+        admin.hidden = false;
+        actionError.hidden = true;
+        actionError.textContent = "";
+        return;
+      }
+      actionError.hidden = false;
+      actionError.textContent = error.message;
+    }
+
+    async function refresh() {
+      if (busy) return;
+      try {
+        render(await api("/api/status"));
+      } catch (error) {
+        stateName.textContent = "Нет связи";
+        detail.textContent = error.message;
+      }
+    }
+
+    async function run(action) {
+      busy = true;
+      toggle.disabled = true;
+      actionError.hidden = true;
+      try {
+        if (action === "stay") {
+          render(await api("/api/stay-awake", { minutes: selectedMinutes() }));
+        } else if (action === "allow") {
+          render(await api("/api/allow-sleep", {}));
+        } else {
+          render(await api("/api/install-helper", {}));
+        }
+        if (action !== "grant") pending = null;
+        showActionError(null);
+      } catch (error) {
+        showActionError(error);
+        if (error.needAdmin) pending = action === "grant" ? pending : action;
+      } finally {
+        busy = false;
+        await refresh();
+      }
+    }
+
+    toggle.addEventListener("click", () => {
+      if (!latest || latest.sleep_disabled == null) return;
+      run(latest.sleep_disabled ? "allow" : "stay");
+    });
+    again.addEventListener("click", () => run("stay"));
+    grant.addEventListener("click", async () => {
+      grant.disabled = true;
+      grant.textContent = "Жду пароль в окне macOS…";
+      await run("grant");
+      grant.disabled = false;
+      grant.textContent = "Ввести пароль";
+      if (pending && latest && latest.admin_ok) {
+        const next = pending;
+        pending = null;
+        await run(next);
+      }
+    });
+
+    for (const button of presetButtons) {
+      button.addEventListener("click", () => setMinutes(Number(button.dataset.minutes)));
+    }
+    for (const input of [hoursInput, minutesInput]) {
+      input.addEventListener("input", () => {
+        const total = Number(hoursInput.value || 0) * 60 + Number(minutesInput.value || 0);
+        for (const button of presetButtons) {
+          button.setAttribute("aria-pressed", Number(button.dataset.minutes) === total ? "true" : "false");
+        }
+      });
+    }
+
+    refresh();
+    setInterval(refresh, 1000);
+    setInterval(paintClock, 1000);
+  </script>
+</body>
+</html>
